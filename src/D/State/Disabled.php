@@ -4,7 +4,7 @@ namespace D\State;
 
 class Disabled {
 
-	public function __call($method){
+	public function __call($method, $args){
 		return false;
 	}
 

@@ -16,6 +16,11 @@ class ump {
 		*/
 		'skin' => "stylish",
 		/*
+		 *	css_file: string
+		 *	path to a custom css file to use instead of the default
+		*/
+		'css_file' => null,
+		/*
 		 *	display.separator: string
 		 *	the string to use as a seperator between the key/values
 		*/
@@ -34,7 +39,7 @@ class ump {
 		 *		'display.cascade'=>[5, 10]
 		 *	set to null to have everything collapse by default
 		*/
-		'display.cascade' => null,
+		'display.cascade' => [20],
 		/*
 		 *	display.show_version: boolean
 		 *	should we include the D version information in the output
@@ -49,7 +54,7 @@ class ump {
 		 *	display.replace_returns: boolean
 		 *	should we replace returns (\n) with br's in the output
 		*/
-		'display.replace_returns' => true,
+		'display.replace_returns' => false,
 		/*
 		 *	sorting.arrays: boolean
 		 *	should we reorder associative arrays based on their keys? 
@@ -58,7 +63,7 @@ class ump {
 	];
 	
 	// will hold the state objects which contain the actual functions
-	private $state;
+	public $state;
 
 
 	public function __construct(array $config = []){
@@ -70,36 +75,28 @@ class ump {
 	}
 
 
-	public function config($key, $val = null){
+	public function config($key = null, $val = null){
 		// passed an array, merge it with config
 		if(is_array($key) && $val == null){
 			$this->config = array_merge($this->config, $key);
+			if($this->enabled())
+				$this->state->config($key, $val);
 		
 		// key and val is set, it's a setter
-		} elseif($val != null){
+		} elseif($key != null && $val != null){
 			$this->config[$key] = $val;
+			if($this->enabled())
+				$this->state->config($key, $val);
 		
 		// passed just key, getter
-		}else {
-			return $this->config[$key];
+		} elseif($key != null) {
+			return $this->config[$key] !== null ? $this->config[$key] : $default;
+		
+		// passed nothing, give back everything
+		} else {
+			return $this->config;
 		}
 	}
-
-
-	/*
-	 *	Dump Settings (ds)
-	 *	dump calls are variable length but want to have the ability to pass in settings as the last argument
-	 *	only way I can think to do that is to make a specific class and check the instanceof the last arg
-	 *	this function is a shortcut to get that DumpSettings class
-	 *	
-	 *	flags: bitmask 	bitmask of the class constants above
-	 *	title: string 	title to print at the top of the output
-	 *
-	*/
-	public function dumpSettings($flags=0, $title=false){
-		return new DumpSettings($flags, $title);
-	}
-
 
 
 	/*
@@ -108,6 +105,8 @@ class ump {
 	public function enable(){
 		if(!$this->enabled())
 			$this->state = new State\Enabled;
+
+		$this->state->config($this->config);
 		return $this->enabled();
 	}
 	public function disable(){
@@ -131,6 +130,20 @@ class ump {
 	 *	Use magic methods to call the state functions
 	*/
 	public function __call($name, $args){
+		// handle settings
+		if(count($args) > 0 && $args[count($args) - 1] instanceof DumpSettings){
+			$settings = array_pop($args);
+		} else {
+			$settings = new DumpSettings();
+		}
+
+		// add the backtrace to the settings
+		// but check to make sure it wasn't set already from D::ump()
+		if(!$settings->backtrace){
+			$settings->backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];
+		}
+		$args[] = $settings;
+
 		return call_user_func_array([$this->state, $name], $args);
 	}
 }

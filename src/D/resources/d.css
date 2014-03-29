@@ -1,0 +1,176 @@
+ul.d-node, #content ul.d-node li {
+    margin: 0;
+    padding: 0;
+}
+ul.d-node ul {
+    padding-left: 18px;
+}
+
+div.d-root {
+    border: solid 1px #E8E8E8;
+    border-radius: 3px;
+    padding: 4px;
+    margin: .5em 0;
+    background-color: #F8F8F8;
+}
+
+div.d-root * {
+    font: 13px/16px "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+    /* Menlo, Consolas, Inconsolata, "Andale Mono", "Courier New", monospace; */
+    font-weight: normal;
+    padding: 0;
+    margin: 0;
+    color: #666;
+}
+
+li.d-child {
+    display: block;
+    list-style: none;
+    overflow: hidden;
+}
+
+ul.d-node ul li.d-child {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+div.d-element {
+    cursor: default;
+    line-height: 22px;
+    display: block;
+    clear: both;
+    white-space: nowrap;
+    background-repeat: no-repeat;
+    background-position: 6px 8px;
+    padding-left: 18px;
+}
+
+a.d-name {
+    color: #284F76;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+a.d-name big {
+    font: 700 20pt Georgia;
+    line-height: 14px;
+    position: relative;
+    top: 2px;
+    left: -2px;
+}
+
+ul.d-node div.d-expand {
+    background-image: url(data:image/gif;base64,R0lGODlhCQAJALMAAP///wAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAAALAAAAAAJAAkAAAQTEIAna33USpwt79vncRpZgpcGRAA7);
+    cursor: pointer;
+}
+
+ul.d-node div.d-opened {
+    background-image: url(data:image/gif;base64,R0lGODlhCQAJALMAAP///wAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAAALAAAAAAJAAkAAAQQEMhJ63w4Z6C37JUXWmQJRAA7);
+}
+
+ul.d-node ul div.d-expand {
+    border-left: 2px solid #CCC;
+}
+ul.d-node ul div.d-opened,
+ul.d-node ul div.d-opened ~ div {
+    border-left: 2px solid #CCC;
+}
+
+div.d-preview {
+    font: 12px/16px Menlo, Consolas, Inconsolata, "Andale Mono", "Courier New", monospace;
+    font-weight: normal;
+    color: #333;
+    padding: 5px 5px;
+    background: #F8F8F8;
+    overflow: auto;
+    word-break:break-all;
+}
+
+ul.d-node ul div.d-expand:hover,
+ul.d-node ul div:hover ~ div {
+    border-left: 2px solid #888;
+    background-color: rgba(88, 139, 255, 0.05) !important;
+}
+
+li.d-footnote {
+    background: #fff;
+    padding: 2px 5px;
+    list-style: none;
+    border-top: solid 1px #bebebe;
+    margin-top: 2px;
+    cursor: default;
+}
+* html li.d-footnote {
+    line-height: 13px;
+}
+.d-version {
+    text-align: right;
+}
+.d-version-number,
+.d-url {
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    margin: 0;
+    padding: 0;
+    color: #366D6D;
+    display: inline;
+    margin-right: 3px;
+}
+li.d-footnote a {
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    color: #434343;
+    text-decoration: none;
+}
+li.d-footnote a:hover {
+    color: #000;
+}
+li.d-footnote span.d-call {
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    position: relative;
+    top: 1px;
+}
+li.d-footnote span.d-call code {
+    font-weight: 700;
+}
+
+div.d-title {
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    cursor: default;
+}
+
+strong.d-array-length,
+strong.d-string-length,
+em.d-type {
+    font-style: italic;
+}
+
+strong.d-string,
+strong.d-integer {
+    color: #000;
+
+}
+
+strong.d-boolean,
+strong.d-null {
+    font: 13px/16px Menlo, Consolas, Inconsolata, "Andale Mono", "Courier New", monospace;
+    font-weight: bold;
+    color: #700;
+}
+
+strong.d-timestamp,
+strong.d-sorted {
+    font-family: "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+    font-weight: bold;
+    color: #700;
+}
+
+strong.d-class {
+    color: #000;
+    font-weight: bold;
+}

@@ -2,14 +2,15 @@
 
 /*
  *	Static Usage Class
- *	just encapsulates D\ump() object with static calls
+ *	Encapsulates D\ump object with static calls
+ *	Holds the constants for the bitmask flags
 */
 
 namespace D;
 
 class D {
 
-	const VERSION = ".1";
+	const VERSION = "0.1";
 	/*
 	 *	Bitwise Flags for changing dump behavior
 	 *	D::KILL		will call die() after output
@@ -21,29 +22,53 @@ class D {
 	const EXPAND = 4;
 
 
-	/*
-	 *	STATIC USAGE
-	*/
 	private static $instance;
+
+	// syntatic sugar for dump
+	public static function ump(){
+		if(!self::$instance)
+			self::$instance = new ump();
+
+		// handle settings
+		$args = func_get_args();
+		$settings = self::getSettings($args);
+		$settings->backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];
+		$args[] = $settings;
+
+		return call_user_func_array([self::$instance, 'dump'], $args);
+	}
+
+	// get a settings object
+	public static function S($flags=0, $title=false){
+		return new DumpSettings($flags, $title);
+	}
 	
 	public static function __callStatic($name, $args){
 		if(!self::$instance)
 			self::$instance = new ump();
 
-		return call_user_func_array([self::$instance, $name], $args);		
-	}
+		// check if it's not a function of the instance and it's a function of the state
+		// if so set the dump settings
+		if(!method_exists(self::$instance, $name) && method_exists(self::$instance->state, $name)){
+			$settings = self::getSettings($args);
+			$settings->backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];
+			$args[] = $settings;
+		}
 
-	public static function S($flags=0, $title=false){
-		if(!self::$instance)
-			self::$instance = new ump();
-
-		return self::$instance->dumpSettings($flags, $title);
+		return call_user_func_array([self::$instance, $name], $args);
 	}
 
 	public static function getInstance(){
 		return self::$instance;
 	}
 
+	private static function getSettings(&$args){
+		if(count($args)>0 && $args[count($args) - 1] instanceof DumpSettings){
+			return array_pop($args);
+		} else {
+			return new DumpSettings();
+		}
+	}
 
 
 }

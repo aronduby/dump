@@ -167,16 +167,16 @@ class Enabled{
 
 		$this->expand_all = ($settings->flags & D::EXPAND);
 
-		print "\n".'<section class="d-wrapper '.($settings->flags & D::EXPAND ? 'expand-all' : '').'">'."\n";
+		print "\n".'<section class="d-wrapper" data-expanded="'.($settings->flags & D::EXPAND ? 'true' : 'false').'">'."\n";
 			print "\t".'<header class="d-header">'."\n";
 
-				print "\t\t".'<span class="d-toggle-all">toggle all</span>'."\n";
+				print "\t\t".'<p class="d-toggle-all">toggle all</p>'."\n";
 				print $settings->title ? "\t\t".'<h1 class="d-title">'.$settings->title.'</h1>'."\n" : '';
 
 				if($this->config('display.show_call_info', null, true)){
 					print "\t\t".'<span class="d-call" style="white-space:nowrap;">';
-					print 'Called from <strong><code>'.$settings->backtrace['file'].'</code></strong>, ';
-					print 'line <strong><code>'.$settings->backtrace['line'].'</code></strong>';
+					print 'Called from <code class="d-file">'.$settings->backtrace['file'].'</code>, ';
+					print 'line <code class="d-line">'.$settings->backtrace['line'].'</code>';
 					print '</span>'."\n";
 				}
 			
@@ -243,7 +243,7 @@ class Enabled{
 	private $object_recursion_protection = null;
 	private $expand_all = false;
 
-	private function render(&$data, $name="&#8230;"){
+	private function render(&$data, $name="&raquo;"){
 
 		// Highlight elements that have a space in their name.
 		// Spaces are hard to see in the HTML and are hard to troubleshoot
@@ -293,16 +293,12 @@ class Enabled{
 		$child_count = count($properties);
 		$collapsed = $this->isCollapsed($this->level, $child_count);
 
-		$classes = (count($data)>0 ? 'd-expand'.(!$collapsed ? ' d-opened' : '') : '');
-		print '<li class="d-child">';
-			print '<div class="d-element '.$classes.'" '.(count($data)>0 ? 'onclick="d.toggle(this);"':'').'>';
-			
-				print '<a class="d-name">'.$name.'</a> <em class="d-type">Object</em> ';
-				print $this->config('display.separator');
-				print '<strong class="d-class">'.get_class($data).'</strong>';
-				print (count($child_count) == 0 ? ' (empty)' : '');
-
-			print '</div>';
+		$classes = (count($data)>0 ? 'd-expandable'.(!$collapsed ? ' d-open' : '') : '');
+		print '<li class="d-child '.$classes.'">';		
+			print '<span class="d-name">'.$name.'</span> <span class="d-type">Object</span> ';
+			print $this->config('display.separator');
+			print '<span class="d-class">'.get_class($data).'</span>';
+			print (count($child_count) == 0 ? ' (empty)' : '');
 
 			if($properties){
 				$this->_vars($data);
@@ -334,7 +330,6 @@ class Enabled{
 		$this->hive($data);
 
 		// rendering
-		print '<div class="d-nest" '.($this->isCollapsed($this->level, count($data)-1) ? 'style="display:none;"' : '').'>';
 		print '<ul class="d-node">';
 
 		// deeper and deeper, way down
@@ -344,7 +339,7 @@ class Enabled{
 			$reflection = new \ReflectionObject($data);
 			$properties = $reflection->getProperties();
 
-			foreach($properties as $property) {
+			foreach($properties as $property){
 				$visibility = null;
 	
 				if($property->isPrivate()){
@@ -362,7 +357,7 @@ class Enabled{
 	
 				$value = $property->getValue($data);
 	
-				$this->render($value, '<span>'.$visibility.'</span>&nbsp;'.$name);
+				$this->render($value, '<span class="d-visibility">'.$visibility.'</span>&nbsp;'.$name);
 				if($visibility=='private' || $visibility=='protected') {
 					$property->setAccessible(false);
 				}
@@ -381,8 +376,7 @@ class Enabled{
 			}
 		}
 
-		print '<ul>'."\n";
-		print '</div>';
+		print '</ul>'."\n";
 		$this->level--;
 	}
 
@@ -410,36 +404,32 @@ class Enabled{
 		$collapsed = $this->isCollapsed($this->level, count($data));
 
 
-		print '<li class="d-child">';
-		print '<div class="d-element '.($child_count>0 ? 'd-expand '.(!$collapsed?'d-opened':'') : '').'" '.(count($data)>0 ? 'onclick="d.toggle(this);"':'').'>';
+		print '<li class="d-child '.($child_count>0 ? 'd-expandable '.(!$collapsed?'d-open':'') : '').'">';
 
-		print '<a class="d-name">'.$name.'</a> <em class="d-type">Array(<strong class="d-array-length">';
-		print count($data).'</strong>)</em>';
+		print '<span class="d-name">'.$name.'</span> <span class="d-type">Array(<span class="d-array-length">';
+		print count($data).'</span>)</span>';
 
 		if(count($data)>0){
 			print " &hellip;";
 		}
 
 		if ($sort) {
-			$title = 'Array has been sorted prior to display. This is configurable using config sorting.arrays';
-			print ' - <span title="'.$title.'"><strong class="d-sorted">Sorted</strong></span>';
+			print ' <span class="d-sorted" title="Array has been sorted prior to display. This is configurable using config sorting.arrays">Sorted</span>';
 		}
 
 		// callback
 		if(is_callable($data)){
 			$vals = array_values($data);
 			print '<span class="d-callback"> |';
-			print ' (<em class="d-type">Callback</em>) <strong class="d-string">';
+			print ' (<span class="d-type">Callback</span>) <span class="d-string">';
 			if(!is_object($vals[0])){
 				echo htmlSpecialChars($vals[0]);
 			} else {
 				echo htmlSpecialChars(get_class($vals[0])).'::';
 			}
 
-			echo htmlSpecialChars($vals[1]).'()</strong></span>';
+			echo htmlSpecialChars($vals[1]).'()</span></span>';
 		}
-
-		print "</div>";
 
 		if (count($data)) {
 			$this->_vars($data);
@@ -450,10 +440,8 @@ class Enabled{
 
 	private function _resource($data, $name){
 		$html = '<li class="d-child">
-			<div class="d-element">
-				<a class="d-name">'.$name.'</a> <em class="d-type">Resource</em>
-				'.$this->config('display.separator').'<strong class="d-resource">'.get_resource_type($data).'</strong>
-			</div>
+				<span class="d-name">'.$name.'</span> <span class="d-type">Resource</span>
+				'.$this->config('display.separator').'<span class="d-resource">'.get_resource_type($data).'</span>
 		</li>';
 
 		echo $html;
@@ -478,34 +466,31 @@ class Enabled{
 		if($replace_returns){
 			$temp = nl2br($temp);
 		} else {
-			$temp = preg_replace("/\\n/", '<strong class="d-carrage-return"> &para; </strong>', $temp);
+			$temp = preg_replace("/\\n/", '<span class="d-carrage-return"> &para; </span>', $temp);
 		}
 
-		print '<li class="d-child">';
-		print '<div class="d-element '.($extra ? 'd-expand' : '').'" '.($extra ? 'onclick="d.toggle(this);"' :'').'>';
-
-			print '<a class="d-name">'.$name.'</a> ';
-			print '<em class="d-type">String(<strong class="d-string-length">'.strlen($data).'</strong>)</em> ';
-			print $this->config('display.separator').'<strong class="d-string">'.$temp;
+		$collapsed = $this->isCollapsed($this->level, 1);
+		print '<li class="d-child '.($extra ? 'd-expandable' . (!$collapsed ? ' d-open' : '') : '').'">';
+			print '<span class="d-name">'.$name.'</span> ';
+			print '<span class="d-type">String(<span class="d-string-length">'.strlen($data).'</span>)</span> ';
+			print $this->config('display.separator').'<span class="d-string">'.$temp;
 
 			// This has to go AFTER the htmlspecialchars
 			if($extra){
 				print '&hellip;';
 			}
-			print '</strong>';
+			print '</span>';
 
 			$ut = $this->isTimestamp($name, $data);
 			if($ut){
-				print ' ~ <strong class="d-timestamp">'.$ut.'</strong>';
+				print ' ~ <span class="d-timestamp">'.$ut.'</span>';
 			}
 
 			// callback
 			if(is_callable($data)){
 				print '<span class="d-callback"> | ';
-				print '(<em class="d-type">Callback</em>) <strong class="d-string">'.htmlSpecialChars($temp).'()</strong></span>';
+				print '(<span class="d-type">Callback</span>) <span class="d-string">'.htmlSpecialChars($temp).'()</span></span>';
 			}
-
-		print '</div>';
 
 		if($extra) {
 			$data = htmlentities($data);
@@ -513,17 +498,14 @@ class Enabled{
 			if($replace_returns){
 				$temp = nl2br($temp);
 			} else {
-				$temp = preg_replace("/\\n/", '<strong class="d-carrage-return"> &para; </strong>', $temp);
+				$temp = preg_replace("/\\n/", '<span class="d-carrage-return"> &para; </span>', $temp);
 			}
 
-			$collapsed = $this->isCollapsed($this->level, 1);
-			print '<div class="d-nest" '.($collapsed ? 'style="display:none;"' : '').'>';
 			print '<ul class="d-node">';
 				print '<li class="d-child">';
 					print '<div class="d-preview">'.$data.'</div>';
 				print '</li>';
 			print '</ul>';
-			print '</div>';
 		}
 
 		print '</li>';
@@ -531,59 +513,49 @@ class Enabled{
 
 	private function _float($data, $name){
 		print '<li class="d-child">';
-		print '<div class="d-element">';
-			print '<a class="d-name">'.$name.'</a> <em class="d-type">Float</em> ';
-			print $this->config('display.separator').' <strong class="d-float">'.$data.'</strong>';
+			print '<span class="d-name">'.$name.'</span> <span class="d-type">Float</span> ';
+			print $this->config('display.separator').' <span class="d-float">'.$data.'</span>';
 
 			$ut = $this->isTimestamp($name,$data);
 			if($ut){
-				print ' ~ <strong class="d-timestamp">'.$ut.'</strong>';
+				print ' ~ <span class="d-timestamp">'.$ut.'</span>';
 			}
-
-		print '</div>';
 		print '</li>';
 	}
 
 	private function _integer($data, $name){
 		print '<li class="d-child">';
-		print '<div class="d-element">';
-			print '<a class="d-name">'.$name.'</a> <em class="d-type">Integer</em> ';
-			print $this->config('display.separator').' <strong class="d-integer">'.$data.'</strong>';
+			print '<span class="d-name">'.$name.'</span> <span class="d-type">Integer</span> ';
+			print $this->config('display.separator').' <span class="d-integer">'.$data.'</span>';
 
 			$ut = $this->isTimestamp($name, $data);
 			if($ut){
-				print ' ~ <strong class="d-timestamp">'.$ut.'</strong>';
+				print ' ~ <span class="d-timestamp">'.$ut.'</span>';
 			}
-
-		print '</div>';
 		print '</li>';
 	}
 
 	private function _boolean($data, $name){
 		print '<li class="d-child">
-			<div class="d-element">
-				<a class="d-name">'.$name.'</a> <em class="d-type">Boolean</em>
-				'.$this->config('display.separator').'<strong class="d-boolean">'.($data ? 'TRUE' : 'FALSE').'</strong>
-			</div>
+				<span class="d-name">'.$name.'</span> <span class="d-type">Boolean</span>
+				'.$this->config('display.separator').'<span class="d-boolean">'.($data ? 'TRUE' : 'FALSE').'</span>
 		</li>';
 	}
 
 	private function _null($name){
 		print '<li class="d-child">
-			<div class="d-element">
-				<a class="d-name">'.$name.'</a> '.$this->config('display.separator').' <em class="d-type d-null">NULL</em>
-			</div>
+				<a class="d-name">'.$name.'</a> '.$this->config('display.separator').' <span class="d-type d-null">NULL</span>
 		</li>';
 	}
 
 
 	private function sanitizeName($name){
 		// Check if the key has whitespace in it, if so show it and add an icon explanation
-		$has_white_space = preg_match("/\s/",$name);
+		$has_white_space = preg_match('/\s+(?![^<>]*>)/x', $name);
 		if ($has_white_space) {
 			// Convert the white space to unicode underbars to visualize it
-			$name  = preg_replace("/\s/","&#9251;",$name);
-			$icon = ' <span class="icon information" title="Note: Key contains white space">i</span> ';
+			$name  = preg_replace("/\s+(?![^<>]*>)/x","&#9251;",$name);
+			$icon = ' <span class="d-icon d-information" title="Note: Key contains white space"></span> ';
 			$ret = $name . $icon;
 		} else {
 			$ret = $name;

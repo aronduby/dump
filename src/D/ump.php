@@ -39,7 +39,7 @@ class ump {
 		 *		'display.cascade'=>[5, 10]
 		 *	set to null to have everything collapse by default
 		*/
-		'display.cascade' => [20],
+		'display.cascade' => null,
 		/*
 		 *	display.show_version: boolean
 		 *	should we include the D version information in the output

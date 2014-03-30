@@ -73,7 +73,7 @@
 		print '<p>Exception: '.$e->getMessage().'</p>';
 	}
 
-	D::ump( (object)array('a' => array('b' => array('c' => array('d' => array('e' => null))))) , D::S(D::EXPAND, 'Long Object Example'));
+	D::ump( (object)array('a' => array('b' => array('c' => array('d' => array('e' => null))))) , D::S(0, 'Long Object Example'));
 
 
 	print '<h2>server</h2>'."\n";

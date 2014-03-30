@@ -47,7 +47,7 @@ class Enabled{
 	}
 
 	public function functions(\D\DumpSettings $settings = null){
-		$this->setTitle('Currently Declared Functions <code class="via">get_defined_functions()</code>', $settings);
+		$this->setTitle('Currently Defined Functions <code class="via">get_defined_functions()</code>', $settings);
 		return $this->dump(get_defined_functions(), $settings);
 	}
 

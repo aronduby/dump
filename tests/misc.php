@@ -35,29 +35,32 @@
 		'microtime'       => microtime(1),
 	);
 
-	if (isset($_GET['short']) || php_sapi_name() === 'cli') {
-		D::ump($a, D::S(D::KILL));
-	}
-
-	print "<h2>regular</h2>\n";
+	// basic call
 	D::ump(array('likes','kittens','and','dogs'));
 
 
-
-	$str = D::ump( ['foo'=>'bar'], D::S(D::OB, 'Capture') );
+	/*
+	 *	Pass an instance of D\DumpSettings as the final argument to add Flags and a Title
+	 *	D::S() is syntatic sugar to quickly get a DumpSettings object
+	 *	Available Flags are:
+	 *		D::OB 		turns on output buffering to capture the output and returns it (InvalidArgumentException thrown if used with D::KILL)
+	 *		D::KILL 	kills execution of PHP after printing the output (InvalidArgumentException thrown if used with D::OB)
+	 *		D::EXPAND 	expands everything by default
+	*/
+	$str = D::ump( ['foo'=>'bar'], D::S(D::OB, 'D::OB Flag') );
 	print '<p>this should be before the output</p>';
 	print $str;
 
 
+	// The D::EXPAND flag
 	D::ump( $a, D::S(D::EXPAND, 'Expanded Values by Default'));
 
 
-
+	// Variable length arguments
 	D::ump('likes','kittens','and','dogs', D::S(0,'Passing Multiple Arguments'));
 
 
-
-	print '<h2>disabling</h2>'."\n";
+	// You can globally enable and disable output
 	D::ump(D::enabled(), D::S(0, 'enabled?'));
 	D::ump(D::disabled(), D::S(0, 'disabled?'));
 	D::disable();
@@ -66,33 +69,58 @@
 
 
 
-	print '<h2>Flag Check</h2>';
+	// Passing in D::KILL and D::OB will result in a InvalidArgumentException since you can't do both
 	try{
 		D::ump('test', D::S(D::KILL | D::OB));
 	} catch (InvalidArgumentException $e){
-		print '<p>Exception: '.$e->getMessage().'</p>';
+		D::ump($e, D::S(0, 'Caught the InvalidArgumentException form D::KILL | D::OB'));
 	}
 
+
+	// lots of expanding
 	D::ump( (object)array('a' => array('b' => array('c' => array('d' => array('e' => null))))) , D::S(0, 'Long Object Example'));
 
 
-	print '<h2>server</h2>'."\n";
+	/*
+	 *	D::ump includes a lot of helper functions for getting different information
+	 *	Unless specified, the only argument needed for all of them is an option DumpSettings object
+	 *	Helper Functions (see the php docs for to learn more):
+	 *	backtrace 	debug_backtrace()
+	 *	classes 	get_declared_classes()
+	 *	interfaces 	get_declared_interfaces()
+	 *	includes 	get_included_files()
+	 *	functions 	get_defined_functions()
+	 *	defines 	get_defined_constants()
+	 *	extensions 	get_loaded_extensions()
+	 *	headers 	getAllHeaders()
+	 *	phpini 		ini_get_all()
+	 *	path 		ini_get('include_path')
+	 *	request 	$_REQUEST
+	 *	get 		$_GET
+	 *	post 		$_POST
+	 *	server 		$_SERVER
+	 *	cookie 		$_COOKIE
+	 *	env 		$_ENV
+	 *	session 	$_SESSION
+	 *	ini 		parse_ini_file(argument*, true) *argument to the function
+	*/
 	D::server();
 
 
 
-	print "<h2>kill</h2>\n";
-	D::ump($a, D::S(D::KILL));
+	D::ump($a, D::S(D::KILL, 'D::KILL, there\'s a message below you shouldnt see'));
 	print "<p>If you see this something is broken</p>";
 
 
-	class bar
-	{
+	class bar {
+		public $a = 'aa';
 	    public $b = 'bb';
-	    public $a = 'aa';
 
-	    function foo()
-	    {
+	    public static $d = 'dd';
+
+	    private $c = 'cc';
+
+	    public function foo() {
 	        return 'bar';
 	    }
 	}

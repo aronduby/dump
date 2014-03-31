@@ -1,9 +1,6 @@
 <!doctype html>
 <head>
 	<title>D::ump Misc Test</title>
-
-	<link href="../src/D/resources/d.css" rel="stylesheet" />
-
 </head>
 <body>
 
@@ -11,8 +8,6 @@
 
 	include("../vendor/autoload.php");
 	use \D\D AS D;
-	// disabled the css for dev
-	D::config('css_file', 'fakefile');
 
 	interface A{
 		public function foo();

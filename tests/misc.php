@@ -10,16 +10,53 @@
 	<?php
 
 	include("../vendor/autoload.php");
-	use \D\D;
-
+	use \D\D AS D;
 	// disabled the css for dev
 	D::config('css_file', 'fakefile');
+
+	interface A{
+		public function foo();
+	}
+	interface B{}
+
+	trait C{
+		public $pet = 'Dog';
+		private function bark($times = 3){
+			while($times > 0){
+				print 'bark!';
+				$times--;
+			}
+		}
+	}
+
+	class Foo{
+		public $test = 'yep';
+	}
+
+	class Bar extends Foo implements A, B{
+
+		use C;
+		
+		const FOO = 'bar';
+		const HELLO = 'World';
+
+		public $a = 'aa';
+	    public $b = 'bb';
+
+	    public static $d = 'dd';
+
+	    private $c = 'cc';
+
+	    public function foo() {
+	        return 'bar';
+	    }
+	}
 
 	$fp = fopen(__FILE__,"r");
 
 	$a = array(
 		'first'           => $fp,
-		'last'            => new bar,
+		'last'            => new Bar(),
 		'null_var'        => NULL,
 		'float'           => pi(),
 		'bool'            => true,
@@ -33,7 +70,13 @@
 		'address'         => array('street' => '123 Fake Street', 'city' => 'Portland', 'state' => 'Maine'),
 		'unixtime'        => 1231241234,
 		'microtime'       => microtime(1),
+		'datetime'		  => new DateTime(),
+		'func'			  => function($arg){ vaR_dump($arg); }
 	);
+
+	$a['last']->a = 'zz';
+	$a['last']->new_property = 'new';
+
 
 	// basic call
 	D::ump(array('likes','kittens','and','dogs'));
@@ -111,19 +154,6 @@
 	D::ump($a, D::S(D::KILL, 'D::KILL, there\'s a message below you shouldnt see'));
 	print "<p>If you see this something is broken</p>";
 
-
-	class bar {
-		public $a = 'aa';
-	    public $b = 'bb';
-
-	    public static $d = 'dd';
-
-	    private $c = 'cc';
-
-	    public function foo() {
-	        return 'bar';
-	    }
-	}
 	?>
 </body>
 </html>

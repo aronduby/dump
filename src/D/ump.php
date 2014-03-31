@@ -63,7 +63,7 @@ class ump {
 	];
 	
 	// will hold the state objects which contain the actual functions
-	public $state;
+	public $state = null;
 
 
 	public function __construct(array $config = []){

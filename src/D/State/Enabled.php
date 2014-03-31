@@ -249,6 +249,9 @@ class Enabled{
 		// Spaces are hard to see in the HTML and are hard to troubleshoot
 		$name = $this->sanitizeName($name);
 
+		if(is_callable($data))
+			return $this->_callable($data, $name);
+
 		if (is_object($data))
 			return $this->_object($data, $name);
 
@@ -337,31 +340,14 @@ class Enabled{
 
 		if($is_object){
 			$reflection = new \ReflectionObject($data);
-			$properties = $reflection->getProperties();
 
-			foreach($properties as $property){
-				$visibility = null;
-	
-				if($property->isPrivate()){
-					$visibility = 'private';
-				} elseif ($property->isProtected()) {
-					$visibility = 'protected';
-				} elseif ($property->isPublic()) {
-					$visibility = 'public';
-				}
-	
-				$name = $property->getName();
-				if($visibility=='private' || $visibility=='protected') {
-					$property->setAccessible(true);
-				}
-	
-				$value = $property->getValue($data);
-	
-				$this->render($value, '<span class="d-visibility">'.$visibility.'</span>&nbsp;'.$name);
-				if($visibility=='private' || $visibility=='protected') {
-					$property->setAccessible(false);
-				}
-			}
+			$this->_reflectionParent($reflection);
+			$this->_reflectionInterfaces($reflection);
+			$this->_reflectionTraits($reflection);
+			$this->_reflectionConstants($reflection);
+			$this->_reflectionProperties($reflection, $data);
+			$this->_reflectionMethods($reflection);
+			
 		} else {
 			// keys
 			$keys = array_keys($data);
@@ -378,6 +364,189 @@ class Enabled{
 
 		print '</ul>'."\n";
 		$this->level--;
+	}
+
+	private function _reflectionParent(\ReflectionObject $reflection){
+		if($pc = $reflection->getParentClass()){
+			$name = '<span class="d-information" title="Class this object extends"></span>&nbsp;';
+			$name .= '<span class="d-obj-info">Extends</span>';
+			// $inst = $pc->newInstanceWithoutConstructor();
+			$this->render($pc->name, $name);
+		}
+	}
+
+	private function _reflectionInterfaces(\ReflectionObject $reflection){
+		$interfaces = $reflection->getInterfaceNames();
+		if(count($interfaces)){
+			$name = '<span class="d-information" title="Interfaces that this object implements"></span>&nbsp;';
+			$name .= '<span class="d-obj-info">Interfaces</span>';
+			$inamesstr = implode(', ', $interfaces);
+			$this->render($inamesstr, $name);	
+		}
+	}
+
+	private function _reflectionTraits(\ReflectionObject $reflection){
+		$traits = $reflection->getTraitNames();
+		if(count($traits)){
+			$name = '<span class="d-information" title="Traits this object uses"></span>&nbsp;';
+			$name .= '<span class="d-obj-info">Traits</span>';
+			$traits = implode(', ', $traits);
+			$this->render($traits, $name);	
+		}	
+	}
+
+	private function _reflectionConstants(\ReflectionObject $reflection){
+		$constants = $reflection->getConstants();
+		if(count($constants)){
+			$name = '<span class="d-information" title="Constants defined in this object"></span>&nbsp;';
+			$name .= '<span class="d-obj-info">Class&nbsp;Constants</span>';
+			$this->render($constants, $name);	
+		}	
+	}
+
+	private function _reflectionProperties(\ReflectionObject $reflection, $data){
+		$cache = [];
+		$properties = $reflection->getProperties();
+		$default_properties = $reflection->getDefaultProperties();
+
+		foreach($properties as $property){
+			$visibility = null;
+
+			if($property->isPrivate()){
+				$visibility = 'private';
+			} elseif ($property->isProtected()) {
+				$visibility = 'protected';
+			} elseif ($property->isPublic()) {
+				$visibility = 'public';
+			}
+
+			if($property->isStatic())
+				$visibility .= '&nbsp;static';
+
+			$name = $property->getName();
+			if($visibility=='private' || $visibility=='protected') {
+				$property->setAccessible(true);
+			}	
+			$value = $property->getValue($data);
+
+			
+			// additional information about this property
+			// gets appended after the name
+			$info_flgs = [];
+			$is_default_property = $property->isDefault();
+			if($is_default_property && ($value == $default_properties[$name])){
+				$info_flgs[] = '<span class="d-obj-icon d-obj-prop-default-val" title="This is the Property\'s Default Value"></span>';
+			}
+			if(!$is_default_property){
+				$info_flgs[] = '<span class="d-obj-icon d-obj-prop-added" title="This Property Was Added Dynamically"></span>';
+			}
+
+			$display_name = '<span class="d-visibility">'.$visibility.'</span>&nbsp;'.$name.(count($info_flgs) ? implode('',$info_flgs) : '');
+			$cache[$display_name] = $value;
+			
+			if($visibility=='private' || $visibility=='protected') {
+				$property->setAccessible(false);
+			}
+		}
+
+		$name = '<span class="d-information" title="Properties in this object (includes inherited and dynamically added)"></span>&nbsp;';
+		$name .= '<span class="d-obj-info">Properties</span>';
+		$this->render($cache, $name);	
+	}
+
+	private function _reflectionMethods(\ReflectionObject $reflection){
+		$cache = [];
+		$methods = $reflection->getMethods();
+		if(!count($methods))
+			return false;
+
+		foreach($methods as $method){
+			$visibility = '';
+
+			if($method->isFinal())
+				$visibility = 'final&nbsp;';
+
+			if($method->isPrivate()){
+				$visibility .= 'private';
+			} elseif( $method->isProtected()){
+				$visibility .= 'protected';
+			} elseif( $method->isPublic()){
+				$visibility .= 'public';
+			}
+
+			if($method->isStatic())
+				$visibility .= '&nbsp;static';
+
+			
+			$display_name = '<span class="d-visibility">'.$visibility.'</span>&nbsp;'.$method->name;
+			$cache[$display_name] = '( '.implode(', ', $this->_reflectionParameters($method)).' )';
+		}
+		
+		if($this->config('sorting.arrays', null, true)){
+			$new = $cache;
+			ksort($new);
+			if($new === $cache){
+				$sorted = false;
+			} else {
+				$cache = $new;
+				$sorted = true;
+			}
+		} else {
+			$sorted = false;
+		}
+
+		$child_count = count($cache);
+		$collapsed = $this->isCollapsed($this->level, count($cache));
+
+		$name = '<span class="d-information" title="Methods in this object (includes inherited)"></span>&nbsp;';
+		$name .= '<span class="d-obj-info">Methods</span>';
+
+		print '<li class="d-child '.($child_count>0 ? 'd-expandable '.(!$collapsed?'d-open':'') : '').'">';
+		print '<span class="d-name">'.$name.'</span> <span class="d-type">Array(<span class="d-array-length">';
+		print count($cache).'</span>)</span>';
+		if(count($cache)>0)
+			print " &hellip;";
+		if ($sorted)
+			print ' <span class="d-sorted" title="Array has been sorted prior to display. This is configurable using config sorting.arrays">Sorted</span>';
+		
+		print '<ul class="d-node">';
+			foreach($cache as $k=>$v){
+				$this->_formattedString($v, $k);
+			}
+		print '</ul>';
+	}
+
+	private function _reflectionParameters(\ReflectionFunctionAbstract $function){
+		// argument list
+		$params = [];
+		foreach($function->getParameters() as $param){
+			$optional = $param->isOptional();
+			$temp = '<span class="d-param-'.($optional ? 'optional' : 'required').'" title="parameter is '.($optional ? 'optional' : 'required').'">';
+				if($param->isPassedByReference())
+					$temp .= '<span class="d-param-reference">&</span>';
+				$temp .= '$'.$param->name;
+				if($optional){
+					try{
+						$temp .= ' = '.$param->getDefaultValue();
+					} catch(\ReflectionException $e){
+						$temp .= '<span class="d-obj-icon d-param-exception" title="Reflection: '.$e->getMessage().'"></span>';
+					}
+				}
+			$temp .= '</span>'; 
+
+			$params[] = $temp;
+		}
+
+		return $params;
+	}
+
+	private function _callable($data, $name){
+		$function = new \ReflectionFunction($data);
+		$params = $this->_reflectionParameters($function);
+
+		print '<li class="d-child">';
+		print '<span class="d-name">'.$name.'</span> <span class="d-type">Callable</span>';
+		print $this->config('display.separator').'<span class="d-callable">'.$function->name.'</span> ('.implode(', ', $this->_reflectionParameters($function)).')';
 	}
 
 	private function _array($data, $name){
@@ -511,6 +680,15 @@ class Enabled{
 		print '</li>';
 	}
 
+	private function _formattedString($data, $name){
+		$name = $this->sanitizeName($name);
+
+		print '<li class="d-child">';
+			print '<span class="d-name">'.$name.'</span> ';
+			print '<span class="d-string-formatted">'.$data.'</span>';
+		print '</li>';
+	}
+
 	private function _float($data, $name){
 		print '<li class="d-child">';
 			print '<span class="d-name">'.$name.'</span> <span class="d-type">Float</span> ';
@@ -555,7 +733,7 @@ class Enabled{
 		if ($has_white_space) {
 			// Convert the white space to unicode underbars to visualize it
 			$name  = preg_replace("/\s+(?![^<>]*>)/x","&#9251;",$name);
-			$icon = ' <span class="d-icon d-information" title="Note: Key contains white space"></span> ';
+			$icon = '';// <span class="d-icon d-information" title="Key contains white space"></span> ';
 			$ret = $name . $icon;
 		} else {
 			$ret = $name;

@@ -1,7 +1,7 @@
 {
     "name": "aronduby/dump",
     "type": "library",
-    "description": "D::ump - a PHP 5.3 print_r/var_dump replacement base on Krumo",
+    "description": "D::ump - a PHP 5.4 print_r/var_dump replacement base on Krumo",
     "keywords": ["dump", "debug", "debugging", "pretty", "print", "print_r", "var_dump", "krumo"],
     "authors": [
 	{

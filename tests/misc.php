@@ -7,7 +7,6 @@
 	<?php
 
 	include("../vendor/autoload.php");
-	use \D\D AS D;
 
 	interface A{
 		public function foo();
@@ -117,33 +116,6 @@
 
 	// lots of expanding
 	D::ump( (object)array('a' => array('b' => array('c' => array('d' => array('e' => null))))) , D::S(0, 'Long Object Example'));
-
-
-	/*
-	 *	D::ump includes a lot of helper functions for getting different information
-	 *	Unless specified, the only argument needed for all of them is an option DumpSettings object
-	 *	Helper Functions (see the php docs for to learn more):
-	 *	backtrace 	debug_backtrace()
-	 *	classes 	get_declared_classes()
-	 *	interfaces 	get_declared_interfaces()
-	 *	includes 	get_included_files()
-	 *	functions 	get_defined_functions()
-	 *	defines 	get_defined_constants()
-	 *	extensions 	get_loaded_extensions()
-	 *	headers 	getAllHeaders()
-	 *	phpini 		ini_get_all()
-	 *	path 		ini_get('include_path')
-	 *	request 	$_REQUEST
-	 *	get 		$_GET
-	 *	post 		$_POST
-	 *	server 		$_SERVER
-	 *	cookie 		$_COOKIE
-	 *	env 		$_ENV
-	 *	session 	$_SESSION
-	 *	ini 		parse_ini_file(argument*, true) *argument to the function
-	*/
-	D::server();
-
 
 
 	D::ump($a, D::S(D::KILL, 'D::KILL, there\'s a message below you shouldnt see'));

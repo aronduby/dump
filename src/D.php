@@ -6,8 +6,6 @@
  *	Holds the constants for the bitmask flags
 */
 
-namespace D;
-
 class D {
 
 	const VERSION = "0.1";
@@ -27,7 +25,10 @@ class D {
 	// syntatic sugar for dump
 	public static function ump(){
 		if(!self::$instance)
-			self::$instance = new ump();
+			self::$instance = new \D\ump();
+
+		if(self::$instance->disabled())
+			return true;
 
 		// handle settings
 		$args = func_get_args();
@@ -40,20 +41,12 @@ class D {
 
 	// get a settings object
 	public static function S($flags=0, $title=false){
-		return new DumpSettings($flags, $title);
+		return new D\DumpSettings($flags, $title);
 	}
 	
 	public static function __callStatic($name, $args){
 		if(!self::$instance)
-			self::$instance = new ump();
-
-		// check if it's not a function of the instance and it's a function of the state
-		// if so set the dump settings
-		if(!method_exists(self::$instance, $name) && method_exists(self::$instance->state, $name)){
-			$settings = self::getSettings($args);
-			$settings->backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0];
-			$args[] = $settings;
-		}
+			self::$instance = new D\ump();
 
 		return call_user_func_array([self::$instance, $name], $args);
 	}
@@ -63,10 +56,10 @@ class D {
 	}
 
 	private static function getSettings(&$args){
-		if(count($args)>0 && $args[count($args) - 1] instanceof DumpSettings){
+		if(count($args)>0 && $args[count($args) - 1] instanceof D\DumpSettings){
 			return array_pop($args);
 		} else {
-			return new DumpSettings();
+			return new D\DumpSettings();
 		}
 	}
 

@@ -8,7 +8,7 @@
 
 class D {
 
-	const VERSION = "0.1";
+	const VERSION = "0.9";
 	/*
 	 *	Bitwise Flags for changing dump behavior
 	 *	D::KILL		will call die() after output

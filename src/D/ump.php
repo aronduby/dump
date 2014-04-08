@@ -412,7 +412,7 @@ class ump {
 				$visibility .= '&nbsp;static';
 
 			$name = $property->getName();
-			if($visibility=='private' || $visibility=='protected') {
+			if($property->isPrivate() || $property->isProtected()) {
 				$property->setAccessible(true);
 			}	
 			$value = $property->getValue($data);
@@ -432,7 +432,7 @@ class ump {
 			$display_name = '<span class="d-visibility">'.$visibility.'</span>&nbsp;'.$name.(count($info_flgs) ? implode('',$info_flgs) : '');
 			$cache[$display_name] = $value;
 			
-			if($visibility=='private' || $visibility=='protected') {
+			if($property->isPrivate() || $property->isProtected()) {
 				$property->setAccessible(false);
 			}
 		}

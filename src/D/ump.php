@@ -515,7 +515,18 @@ class ump {
 				$temp .= '$'.$param->name;
 				if($optional){
 					try{
-						$temp .= ' = '.$param->getDefaultValue();
+						$temp .= ' = ';
+						$default = $param->getDefaultValue();
+						if(is_array($default)){
+							$temp .= '[';
+							$parts = [];
+							foreach($default as $k=>$v){
+								$parts[] = "'".$k."' => ".$v;
+							}
+							$temp .= implode(', ', $parts).']';
+						} else {
+							$temp .= $default;
+						}
 					} catch(\ReflectionException $e){
 						$temp .= '<span class="d-obj-icon d-param-exception" title="Reflection: '.$e->getMessage().'"></span>';
 					}

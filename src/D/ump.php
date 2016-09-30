@@ -250,11 +250,11 @@ class ump
 		// Spaces are hard to see in the HTML and are hard to troubleshoot
 		$name = $this->sanitizeName($name);
 
-		if (is_callable($data))
-			return $this->_callable($data, $name);
-
 		if (is_object($data))
 			return $this->_object($data, $name);
+
+		if (is_callable($data))
+			return $this->_callable($data, $name);
 
 		if (is_array($data))
 			return $this->_array($data, $name);

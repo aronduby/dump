@@ -30,12 +30,6 @@ _**Note:**_ reflection can't get the default values for arguments of built-in me
 ```
 then run `composer install` or `composer update`
 
-###Manually
-
-Download the files manually and include them. The `src` folder is based on a PSR-4 autoloader. You'll need to include the 3 php file. Note that `ump` and `DumpSettings` are in the `\D` namepsace while `D` is global.
-
-*PHAR possibly coming soon...*
-
 ##Usage
 ###Basic Usage
 ```php
@@ -66,6 +60,7 @@ The following flags are available as constants of the `D` class:
 - **D::KILL** -- will call die() after output
 - **D::OB** -- will use the output buffer and return the output instead of printing it
 - **D::EXPAND** -- starts with the output fully expanded
+- **D::IGNORE_CLI** -- by default, if the script detects you are running command line it just uses `print_r`, use this to include the full output, useful if you are doing html logging
 
 _**Note:**_ Passing a bitmask containing both `D::KILL` and `D::OB` will result in an `InvalidArgumentException` being thrown since you can't do both
 _**Note:**_ `D\DumpSettings` also has a backtrace property which is used by `D::ump()`
